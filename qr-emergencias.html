@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Emergencias Chile</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    /* Encabezado con la imagen de fondo ambulancia.jpg */
+    header {
+      background: #d32f2f;
+      /* ✅ Imagen ambulancia.jpg como fondo */
+      background-image: url("logo.png");
+      background-size: contain;       /* Ajusta el tamaño sin deformar */
+      background-position: center;    /* Centra la imagen */
+      background-repeat: no-repeat;   /* No repite la imagen */
+      background-color: rgba(211, 47, 47, 0.88); /* Color rojo con transparencia para leer bien */
+      background-blend-mode: overlay;  /* Mezcla imagen y color */
+      color: white;
+      padding: 25px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      min-height: 160px;
+    }
+
+    .titulo-seccion {
+      text-align: center;
+      flex: 1 1 300px;
+      z-index: 1; /* Asegura que el texto quede encima */
+    }
+
+    @keyframes latido {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    header h1 {
+      font-size: 32px;
+      animation: latido 2.5s ease-in-out infinite;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7); /* Sombra para mayor legibilidad */
+    }
+    header h1:hover { transform: scale(1); }
+
+    .numeros-emergencia {
+      background: rgba(255,255,255,0.22);
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      flex: 0 1 auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      z-index: 1; /* Queda encima de la imagen */
+    }
+    .numeros-emergencia h4 {
+      margin-bottom: 8px;
+      font-size: 15px;
+      color: #ffe082;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    .numeros-emergencia p {
+      margin: 4px 0;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .espacio {
+      height: 25px;
+    }
+
+    .subtitulo {
+      text-align: center;
+      font-size: 22px;
+      color: #333;
+      font-weight: bold;
+      margin: 10px 0 20px;
+    }
+
+    form {
+      background: white;
+      max-width: 720px;
+      margin: 0 auto 30px;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    h3 {
+      color: #d32f2f;
+      margin: 25px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 15px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .botones {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    button {
+      padding: 11px 22px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-guardar {
+      background: #1976d2;
+      color: white;
+      font-weight: bold;
+    }
+    .btn-guardar:hover {
+      background: #0d47a1;
+    }
+    .btn-limpiar {
+      background: #757575;
+      color: white;
+    }
+    .btn-limpiar:hover {
+      background: #424242;
+    }
+    .btn-qr {
+      background: #388e3c;
+      color: white;
+      margin-top: 20px;
+      width: 100%;
+    }
+    .btn-qr:hover {
+      background: #1b5e20;
+    }
+    .btn-whatsapp {
+      background: #25d366;
+      color: white;
+      margin-top: 15px;
+      width: 100%;
+      font-weight: bold;
+    }
+    .btn-whatsapp:hover {
+      background: #128c7e;
+    }
+    #qr-contenedor {
+      margin-top: 25px;
+      text-align: center;
+      padding: 15px;
+      background: #fafafa;
+      border-radius: 6px;
+      display: none;
+    }
+    .aviso {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .exito {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        text-align: center;
+        min-height: 180px;
+      }
+      .numeros-emergencia {
+        width: 100%;
+        text-align: center;
+      }
+      header h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="titulo-seccion">
+      <h1>QR Emergencias Scanner</h1>
+    </div>
+
+    <div class="numeros-emergencia">
+      <h4>📞 Emergencias Chile</h4>
+      <p><strong>131</strong> - SAMU / Ambulancias</p>
+      <p><strong>132</strong> - Bomberos</p>
+      <p><strong>133</strong> - Carabineros</p>
+      <p><strong>134</strong> - Investigaciones</p>
+      <p><strong>137</strong> - Rescate Marítimo</p>
+    </div>
+  </header>
+
+  <div class="espacio"></div>
+
+  <h2 class="subtitulo">Ingresar datos de emergencias</h2>
+
+  <form id="formEmergencia">
+    <h3>Datos personales</h3>
+
+    <label>Nombre completo:</label>
+    <input type="text" name="nombre" placeholder="Ej: Juan Pérez González" required>
+
+    <label>Edad:</label>
+    <input type="number" name="edad" min="0" max="120" placeholder="Ej: 35" required>
+
+    <label>Fecha de nacimiento:</label>
+    <input type="date" name="fecha_nacimiento" required>
+
+    <label>Peso (kg):</label>
+    <input type="number" name="peso" min="1" max="300" step="0.1" placeholder="Ej: 72.5" required>
+
+    <label>Estatura (cm):</label>
+    <input type="number" name="estatura" min="50" max="250" placeholder="Ej: 170" required>
+
+    <label>Tipo de sangre:</label>
+    <select name="sangre" required>
+      <option value="">Seleccione</option>
+      <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+      <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+      <option>No lo recuerdo</option>
+    </select>
+
+    <h3>Información médica</h3>
+
+    <label>Alergias a medicamentos u otros:</label>
+    <textarea name="alergias" rows="3" placeholder="Ej: Penicilina, polen, mariscos"></textarea>
+
+    <label>Enfermedades de base:</label>
+    <textarea name="enfermedades_base" rows="3" placeholder="Ej: Diabetes, hipertensión, asma"></textarea>
+
+    <label>Operaciones anteriores:</label>
+    <textarea name="operaciones_anteriores" rows="3" placeholder="Ej: Apendicitis en 2015, fractura de pierna 2020"></textarea>
+
+    <h3>Ubicación en Chile</h3>
+
+    <label>Dirección completa:</label>
+    <input type="text" name="direccion" placeholder="Ej: Av. Las Condes 8500, Depto 302" required>
+
+    <label>Comuna (Región Metropolitana):</label>
+    <select name="comuna" required>
+      <option value="">Seleccione comuna</option>
+      <optgroup label="Provincia de Santiago">
+        <option>Cerrillos</option><option>Cerro Navia</option><option>Conchalí</option><option>El Bosque</option>
+        <option>Estación Central</option><option>Huechuraba</option><option>Independencia</option><option>La Cisterna</option>
+        <option>La Florida</option><option>La Granja</option><option>La Pintana</option><option>La Reina</option>
+        <option>Las Condes</option><option>Lo Barnechea</option><option>Lo Espejo</option><option>Lo Prado</option>
+        <option>Macul</option><option>Maipú</option><option>Ñuñoa</option><option>Pedro Aguirre Cerda</option>
+        <option>Peñalolén</option><option>Providencia</option><option>Pudahuel</option><option>Quilicura</option>
+        <option>Quinta Normal</option><option>Recoleta</option><option>Renca</option><option>San Joaquín</option>
+        <option>San Miguel</option><option>San Ramón</option><option>Santiago</option><option>Vitacura</option>
+      </optgroup>
+      <optgroup label="Provincia de Cordillera">
+        <option>Pirque</option><option>Puente Alto</option><option>San José de Maipo</option>
+      </optgroup>
+      <optgroup label="Provincia de Chacabuco">
+        <option>Colina</option><option>Lampa</option><option>Til Til</option>
+      </optgroup>
+      <optgroup label="Provincia de Maipo">
+        <option>Buin</option><option>Calera de Tango</option><option>Paine</option><option>San Bernardo</option>
+      </optgroup>
+      <optgroup label="Provincia de Melipilla">
+        <option>Alhué</option><option>Curacaví</option><option>María Pinto</option><option>Melipilla</option><option>San Pedro</option>
+      </optgroup>
+      <optgroup label="Provincia de Talagante">
+        <option>El Monte</option><option>Isla de Maipo</option><option>Padre Hurtado</option><option>Peñaflor</option><option>Talagante</option>
+      </optgroup>
+    </select>
+
+    <h3>Contacto de emergencia</h3>
+
+    <label>Nombre completo:</label>
+    <input type="text" name="contacto_nombre" placeholder="Ej: María González Pérez" required>
+
+    <label>Teléfono celular (+56):</label>
+    <input type="tel" name="contacto_telefono" placeholder="+56 9 8765 4321" pattern="\+56\s?9\s?[0-9]{4}\s?[0-9]{4}" required>
+
+    <div class="botones">
+      <button type="button" class="btn-guardar" onclick="guardarDatos()">💾 Guardar datos</button>
+      <button type="reset" class="btn-limpiar">🧹 Limpiar datos</button>
+    </div>
+
+    <button type="button" class="btn-qr" onclick="generarQR()">🔲 Crear código QR</button>
+    <button type="button" class="btn-whatsapp" onclick="enviarPorWhatsApp()">📱 Enviar por WhatsApp</button>
+
+    <div id="aviso"></div>
+    <div id="qr-contenedor">
+      <canvas id="codigoQR"></canvas>
+      <p style="margin-top:10px; font-size:14px;">Escanee este código para ver los datos</p>
+    </div>
+  </form>
+
+  <script>
+    // Función para guardar datos en archivo
+    function guardarDatos() {
+      const form = document.getElementById('formEmergencia');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const datos = new FormData(form);
+      let contenidoArchivo = "=====================================\n";
+      contenidoArchivo += "        DATOS DE EMERGENCIA         \n";
+      contenidoArchivo += "=====================================\n\n";
+
+      for (let [campo, valor] of datos.entries()) {
+        if (valor.trim() !== "") {
+          let nombreCampo = campo.replace(/_/g, " ").toUpperCase();
+          contenidoArchivo += `${nombreCampo}: ${valor}\n`;
+        }
+      }
+
+      contenidoArchivo += "\n=====================================\n";
+      contenidoArchivo += `Fecha de guardado: ${new Date().toLocaleString('es-CL')}\n`;
+      contenidoArchivo += "=====================================\n";
+
+      const blob = new Blob([contenidoArchivo], { type: 'text/plain;charset=utf-8' });
+      const enlaceDescarga = document.createElement('a');
+      enlaceDescarga.href = URL.createObjectURL(blob);
+      const fechaArchivo = new Date().toISOString().slice(0, 19).replace(/[-T:]/g, "");
+      enlaceDescarga.download = `datos_guardados_${fechaArchivo}.txt`;
+
+      document.body.appendChild(enlaceDescarga);
+      enlaceDescarga.click();
+      document.body.removeChild(enlaceDescarga);
+      URL.revokeObjectURL(enlaceDescarga.href);
+
+      mostrarAviso("✅ Datos guardados en carpeta Descargas", "exito");
+    }
+
+    // Función para generar QR
+    function generarQR() {
+      const form = document.getElementById('formEmergencia');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const datos = new FormData(form);
+      let contenidoQR = "DATOS DE EMERGENCIA CHILE\n\n";
+
+      for (let [campo, valor] of datos.entries()) {
+        if (valor.trim() !== "") {
+          let nombreCampo = campo.replace(/_/g, " ");
+          contenidoQR += `${nombreCampo}: ${valor}\n`;
+        }
+      }
+
+      const contenedor = document.getElementById('qr-contenedor');
+      const canvas = document.getElementById('codigoQR');
+
+      QRCode.toCanvas(canvas, contenidoQR, {
+        width: 280,
+        margin: 2,
+        errorCorrectionLevel: 'M'
+      }, (error) => {
+        if (error) {
+          mostrarAviso("❌ Error al generar QR", "error");
+        } else {
+          contenedor.style.display = "block";
+          mostrarAviso("✅ Código QR generado", "exito");
+        }
+      });
+    }
+
+    // Función para WhatsApp
+    function enviarPorWhatsApp() {
+      const form = document.getElementById('formEmergencia');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const datos = new FormData(form);
+      let mensaje = "⚠️ DATOS DE EMERGENCIA ⚠️%0A%0A";
+
+      for (let [campo, valor] of datos.entries()) {
+        if (valor.trim() !== "") {
+          let nombreCampo = campo.replace(/_/g, " ").toUpperCase();
+          mensaje += `• ${nombreCampo}: ${valor}%0A`;
+        }
+      }
+
+      let telefono = datos.get("contacto_telefono").replace(/\D/g, "");
+      if (!telefono.startsWith("56")) telefono = "56" + telefono;
+
+      const enlaceWhatsApp = `https://wa.me/${telefono}?text=${mensaje}`;
+      window.open(enlaceWhatsApp, "_blank");
+
+      mostrarAviso("📱 Abriendo WhatsApp...", "exito");
+    }
+
+    // Mostrar avisos
+    function mostrarAviso(mensaje, tipo) {
+      const aviso = document.getElementById('aviso');
+      aviso.textContent = mensaje;
+      aviso.className = `aviso ${tipo}`;
+      setTimeout(() => aviso.textContent = "", 5000);
+    }
+  </script>
+</body>
+</html>
